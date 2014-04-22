@@ -1,0 +1,41 @@
+{
+  "name": "generator-katamari-gulp",
+  "version": "0.0.1",
+  "description": "Yeoman generator",
+  "license": "MIT",
+  "main": "app/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/qsat/generator-katamari-gulp"
+  },
+  "author": " (https://github.com/qsat)",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "files": [
+    "app"
+  ],
+  "keywords": [
+    "yeoman-generator"
+  ],
+  "dependencies": {
+    "yeoman-generator": "~0.16.0",
+    "chalk": "~0.4.0"
+  },
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "peerDependencies": {
+    "yo": ">=1.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/qsat/generator-katamari-gulp/issues"
+  },
+  "homepage": "https://github.com/qsat/generator-katamari-gulp",
+  "directories": {
+    "test": "test"
+  }
+}
