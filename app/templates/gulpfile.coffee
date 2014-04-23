@@ -4,6 +4,7 @@ jade = require 'gulp-jade'
 sftp = require 'gulp-sftp'
 stylus = require 'gulp-stylus'
 rename = require 'gulp-rename'
+uglify = require 'gulp-uglify'
 changed = require 'gulp-changed'
 imagemin = require 'gulp-imagemin'
 browserify = require 'gulp-browserify'
@@ -25,10 +26,10 @@ gulp.task 'browserify', ->
     .pipe changed DEST
     .pipe browserify
         debug: true,
-        nobuiltins: true
         transform: ['coffeeify'],
         extensions: ['.coffee'], 
     .pipe expand "js"
+    #.pipe uglify()
     .pipe gulp.dest DEST
     .pipe browserSync.reload stream:true, once: true
 
