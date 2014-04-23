@@ -53,7 +53,7 @@ gulp.task "jade", ->
 gulp.task "imagemin", ->
   gulp.src paths.img
     .pipe changed DEST
-    .pipe imagemin()
+    .pipe imagemin pngquant: true
     .pipe gulp.dest DEST
 
 gulp.task "browser-sync", ->
