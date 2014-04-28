@@ -9,39 +9,44 @@ changed = require 'gulp-changed'
 imagemin = require 'gulp-imagemin'
 browserify = require 'gulp-browserify'
 browserSync = require 'browser-sync'
+spritesmith = require 'gulp.spritesmith'
 
 expand = (ext)-> rename (path) -> _.tap path, (p) -> p.extname = ".#{ext}"
 
 DEST = "./htdocs"
 SRC = "./src"
+CHANGED = "./__modified"
 
+# ファイルタイプごとに無視するファイルなどを設定
 paths =
-  js: "#{SRC}/**/app.coffee"
-  css: "#{SRC}/**/*.styl"
-  img: "#{SRC}/**/*.{png, jpg, gif}"
-  html: "#{SRC}/**/*.jade"
+  js: "#{SRC}/**/app*.coffee"
+  css: ["#{SRC}/**/*.styl", "!#{SRC}/**/sprite.styl", "!#{SRC}/**/include.styl"]
+  img: ["#{SRC}/**/*.{png, jpg, gif}", "!#{SRC}/**/sprite/**/*.png"]
+  html: ["#{SRC}/**/*.jade", "!#{SRC}/**/components/**/*.jade", "!#{SRC}/**/include.jade"]
+  reload: ["#{DEST}/**/*", "!#{DEST}/**/*.css"]
+  sprite: a: "#{SRC}/a/**/sprite/**/*.png", b: "#{SRC}/b/**/sprite/**/*.png"
 
 gulp.task 'browserify', ->
   gulp.src paths.js, read: false
-    .pipe changed DEST
     .pipe browserify
-        debug: true,
-        transform: ['coffeeify'],
-        extensions: ['.coffee'], 
+        debug: false
+        transform: ['coffeeify', 'jadeify']
+        extensions: ['.coffee'],
     .pipe expand "js"
     #.pipe uglify()
     .pipe gulp.dest DEST
-    .pipe browserSync.reload stream:true, once: true
+    .pipe gulp.dest CHANGED
 
 # FW for Stylus
 nib = require 'nib'
 
-gulp.task "stylus", ->
+gulp.task "stylus", ["imagemin"], ->
   gulp.src paths.css
     .pipe changed DEST
-    .pipe stylus use: nib()
+    .pipe stylus use: nib(), errors: true
     .pipe expand "css"
     .pipe gulp.dest DEST
+    .pipe gulp.dest CHANGED
     .pipe browserSync.reload stream:true
 
 gulp.task "jade", ->
@@ -50,12 +55,14 @@ gulp.task "jade", ->
     .pipe jade pretty: true
     .pipe expand "html"
     .pipe gulp.dest DEST
+    .pipe gulp.dest CHANGED
 
-gulp.task "imagemin", ->
+gulp.task "imagemin", ["sprite"], ->
   gulp.src paths.img
     .pipe changed DEST
     .pipe imagemin pngquant: true
     .pipe gulp.dest DEST
+    .pipe gulp.dest CHANGED
 
 gulp.task "browser-sync", ->
   browserSync.init null,
@@ -64,8 +71,7 @@ gulp.task "browser-sync", ->
     server: baseDir: DEST
 
 gulp.task "sftp", ->
-  gulp.src DEST
-    .pipe changed DEST
+  gulp.src CHANGED
     .pipe sftp
       host: 'example.com'
       user: 'myname'
@@ -73,12 +79,33 @@ gulp.task "sftp", ->
       key:  require('fs').readFileSync('~/.ssh/privatekey.pem')
 
 # http://blog.e-riverstyle.com/2014/02/gulpspritesmithcss-spritegulp.html
-gulp.task "spritesmith"
+gulp.task "sprite", ->
+  a = gulp.src paths.sprite.a
+    .pipe spritesmith
+      imgName: 'a/images/sprite.png'
+      cssName: 'a/images/sprite.styl'
+      imgPath: 'images/sprite.png'
+      cssFormat: 'stylus'
+      padding: 4
+
+  a.img.pipe gulp.dest SRC
+  a.css.pipe gulp.dest SRC
+
+  b = gulp.src paths.sprite.b
+    .pipe spritesmith
+      imgName: 'b/images/sprite.png'
+      cssName: 'b/images/sprite.styl'
+      imgPath: 'images/sprite.png'
+      cssFormat: 'stylus'
+      padding: 4
+
+  b.img.pipe gulp.dest SRC
+  b.css.pipe gulp.dest SRC
 
 gulp.task 'watch', ->
-    gulp.watch paths.js  , ['browserify']
+    gulp.watch paths.js.replace("app*", "*")  , ['browserify']
     gulp.watch paths.css , ['stylus']
     gulp.watch paths.html, ['jade']
-    gulp.watch "#{DEST}/**/*.html", -> browserSync.reload()
+    gulp.watch paths.reload, -> browserSync.reload once: true
 
 gulp.task "default", ['browser-sync', 'watch'] 
