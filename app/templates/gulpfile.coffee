@@ -19,10 +19,10 @@ CHANGED = "./__modified"
 
 # ファイルタイプごとに無視するファイルなどを設定
 paths =
-  js: ["#{SRC}/**/*.coffee", "!#{SRC}/**/_*", "!#{SRC}/**/_*.coffee"]
-  css: ["#{SRC}/**/*.styl", "!#{SRC}/**/sprite.styl", "!#{SRC}/**/_*"]
+  js: ["#{SRC}/**/*.coffee", "!#{SRC}/**/_**/*.coffee", "!#{SRC}/**/_*.coffee"]
+  css: ["#{SRC}/**/*.styl", "!#{SRC}/**/sprite.styl", "!#{SRC}/**/_**/*.styl"]
   img: ["#{SRC}/**/*.{png, jpg, gif}", "!#{SRC}/**/sprite/**/*.png"]
-  html: ["#{SRC}/**/*.jade", "!#{SRC}/**/_*"]
+  html: ["#{SRC}/**/*.jade", "!#{SRC}/**/_**/*.jade"]
   reload: ["#{DEST}/**/*", "!#{DEST}/**/*.css"]
   sprite: "#{SRC}/**/sprite/**/*.png"
 
@@ -40,7 +40,7 @@ gulp.task 'browserify', ->
 # FW for Stylus
 nib = require 'nib'
 
-gulp.task "stylus", ["sprite"] ->
+gulp.task "stylus", ["sprite"], ->
   gulp.src paths.css
     .pipe changed DEST
     .pipe stylus use: nib(), errors: true
@@ -79,7 +79,7 @@ gulp.task "sftp", ->
 
 # http://blog.e-riverstyle.com/2014/02/gulpspritesmithcss-spritegulp.html
 gulp.task "sprite", ->
-  a = gulp.src paths.sprite.a
+  a = gulp.src paths.sprite
     .pipe spritesmith
       imgName: 'images/sprite.png'
       cssName: 'images/sprite.styl'
