@@ -97,4 +97,4 @@ gulp.task 'watch', ->
     gulp.watch paths.html, ['jade']
     gulp.watch paths.reload, -> browserSync.reload once: true
 
-gulp.task "default", ['browser-sync', 'watch'] 
+gulp.task "default", ['jade', 'browser-sync', 'watch'] 
