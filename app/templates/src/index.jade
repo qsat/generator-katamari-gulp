@@ -1,18 +1,21 @@
 doctype html
-html(lang="en")
+html(lang='en')
   head
-    title= pageTitle
-    script( src="app.js" )
+    meta(charset='UTF-8')
+    title <%= projectName %>
+    link(rel='stylesheet', href='index.css')
   body
-    h1 Jade - node template engine
-    a(href="dir") link
-    #container.col
-      if youAreUsingJade
-        p You are amazing
-      else
-        p Get on it!
-      p.
-        Jade is a terse and simple
-        templating language with a
-        strong focus on performance
-        and powerful features.
+    h1 Project: <%= projectName %> has installed !!
+    br
+    h2 Browser Sync Test
+    input#myid(type='text', name='t001')
+    br
+    label
+      input(type='radio', name='r')
+      | radio1
+    label
+      input(type='radio', name='r')
+      | radio2
+    div(style='height: 3000px;')
+
+    script(src='./app.js')

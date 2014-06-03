@@ -19,12 +19,12 @@ CHANGED = "./__modified"
 
 # ファイルタイプごとに無視するファイルなどを設定
 paths =
-  js: "#{SRC}/**/app*.coffee"
-  css: ["#{SRC}/**/*.styl", "!#{SRC}/**/sprite.styl", "!#{SRC}/**/include.styl"]
+  js: ["#{SRC}/**/*.coffee", "!#{SRC}/**/_*", "!#{SRC}/**/_*.coffee"]
+  css: ["#{SRC}/**/*.styl", "!#{SRC}/**/sprite.styl", "!#{SRC}/**/_*"]
   img: ["#{SRC}/**/*.{png, jpg, gif}", "!#{SRC}/**/sprite/**/*.png"]
-  html: ["#{SRC}/**/*.jade", "!#{SRC}/**/components/**/*.jade", "!#{SRC}/**/include.jade"]
+  html: ["#{SRC}/**/*.jade", "!#{SRC}/**/_*"]
   reload: ["#{DEST}/**/*", "!#{DEST}/**/*.css"]
-  sprite: a: "#{SRC}/a/**/sprite/**/*.png", b: "#{SRC}/b/**/sprite/**/*.png"
+  sprite: "#{SRC}/**/sprite/**/*.png"
 
 gulp.task 'browserify', ->
   gulp.src paths.js, read: false
@@ -40,7 +40,7 @@ gulp.task 'browserify', ->
 # FW for Stylus
 nib = require 'nib'
 
-gulp.task "stylus", ["imagemin"], ->
+gulp.task "stylus", ["sprite"] ->
   gulp.src paths.css
     .pipe changed DEST
     .pipe stylus use: nib(), errors: true
@@ -51,7 +51,6 @@ gulp.task "stylus", ["imagemin"], ->
 
 gulp.task "jade", ->
   gulp.src paths.html
-    .pipe changed DEST
     .pipe jade pretty: true
     .pipe expand "html"
     .pipe gulp.dest DEST
@@ -82,25 +81,15 @@ gulp.task "sftp", ->
 gulp.task "sprite", ->
   a = gulp.src paths.sprite.a
     .pipe spritesmith
-      imgName: 'a/images/sprite.png'
-      cssName: 'a/images/sprite.styl'
+      imgName: 'images/sprite.png'
+      cssName: 'images/sprite.styl'
       imgPath: 'images/sprite.png'
       cssFormat: 'stylus'
       padding: 4
 
   a.img.pipe gulp.dest SRC
+  a.img.pipe gulp.dest DEST
   a.css.pipe gulp.dest SRC
-
-  b = gulp.src paths.sprite.b
-    .pipe spritesmith
-      imgName: 'b/images/sprite.png'
-      cssName: 'b/images/sprite.styl'
-      imgPath: 'images/sprite.png'
-      cssFormat: 'stylus'
-      padding: 4
-
-  b.img.pipe gulp.dest SRC
-  b.css.pipe gulp.dest SRC
 
 gulp.task 'watch', ->
     gulp.watch paths.js.replace("app*", "*")  , ['browserify']
