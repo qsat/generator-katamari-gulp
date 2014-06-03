@@ -92,9 +92,9 @@ gulp.task "sprite", ->
   a.css.pipe gulp.dest SRC
 
 gulp.task 'watch', ->
-    gulp.watch paths.js.replace("app*", "*")  , ['browserify']
-    gulp.watch paths.css , ['stylus']
-    gulp.watch paths.html, ['jade']
+    gulp.watch paths.js[0], ['browserify']
+    gulp.watch paths.css  , ['stylus']
+    gulp.watch paths.html , ['jade']
     gulp.watch paths.reload, -> browserSync.reload once: true
 
 gulp.task "default", ['jade', 'browser-sync', 'watch'] 
