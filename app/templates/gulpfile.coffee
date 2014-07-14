@@ -10,6 +10,8 @@ imagemin = require 'gulp-imagemin'
 browserify = require 'gulp-browserify'
 browserSync = require 'browser-sync'
 spritesmith = require 'gulp.spritesmith'
+pngcrush = require 'imagemin-pngcrush'
+pngquant = require 'imagemin-pngquant'
 
 expand = (ext)-> rename (path) -> _.tap path, (p) -> p.extname = ".#{ext}"
 
@@ -20,7 +22,7 @@ CHANGED = "./__modified"
 # ファイルタイプごとに無視するファイルなどを設定
 paths =
   js: ["#{SRC}/**/*.coffee", "!#{SRC}/**/_**/*.coffee", "!#{SRC}/**/_*.coffee"]
-  css: ["#{SRC}/**/*.styl", "!#{SRC}/**/sprite.styl", "!#{SRC}/**/_**/*.styl"]
+  css: ["#{SRC}/**/*.styl", "!#{SRC}/**/sprite*.styl", "!#{SRC}/**/_**/*.styl"]
   img: ["#{SRC}/**/*.{png, jpg, gif}", "!#{SRC}/**/sprite/**/*.png"]
   html: ["#{SRC}/**/*.jade", "!#{SRC}/**/_**/*.jade"]
   reload: ["#{DEST}/**/*", "!#{DEST}/**/*.css"]
@@ -56,12 +58,11 @@ gulp.task "jade", ->
     .pipe gulp.dest DEST
     .pipe gulp.dest CHANGED
 
-gulp.task "imagemin", ["sprite"], ->
+gulp.task "imagemin", ->
   gulp.src paths.img
-    .pipe changed DEST
-    .pipe imagemin pngquant: true
+    .pipe imagemin
+      use: [pngcrush(), pngquant()]
     .pipe gulp.dest DEST
-    .pipe gulp.dest CHANGED
 
 gulp.task "browser-sync", ->
   browserSync.init null,
@@ -84,6 +85,7 @@ gulp.task "sprite", ->
       imgName: 'images/sprite.png'
       cssName: 'images/sprite.styl'
       imgPath: 'images/sprite.png'
+      algorithm: 'binary-tree'
       cssFormat: 'stylus'
       padding: 4
 
@@ -92,9 +94,10 @@ gulp.task "sprite", ->
   a.css.pipe gulp.dest SRC
 
 gulp.task 'watch', ->
-    gulp.watch paths.js[0], ['browserify']
+    gulp.watch [paths.js[0], "#{SRC}/**/_*/*"], ['browserify']
     gulp.watch paths.css  , ['stylus']
     gulp.watch paths.html , ['jade']
     gulp.watch paths.reload, -> browserSync.reload once: true
 
 gulp.task "default", ['jade', 'browser-sync', 'watch'] 
+gulp.task "build", ['imagemin', 'stylus', 'browserify', 'jade']
