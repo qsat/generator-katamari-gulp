@@ -10,6 +10,7 @@ imagemin = require 'gulp-imagemin'
 browserify = require 'gulp-browserify'
 browserSync = require 'browser-sync'
 spritesmith = require 'gulp.spritesmith'
+plumber = require 'gulp-plumber'
 pngcrush = require 'imagemin-pngcrush'
 pngquant = require 'imagemin-pngquant'
 
@@ -30,6 +31,7 @@ paths =
 
 gulp.task 'browserify', ->
   gulp.src paths.js, read: false
+    .pipe plumber()
     .pipe browserify
         debug: false
         transform: ['coffeeify', 'jadeify']
@@ -44,6 +46,7 @@ nib = require 'nib'
 
 gulp.task "stylus", ["sprite"], ->
   gulp.src paths.css
+    .pipe plumber()
     .pipe changed DEST
     .pipe stylus use: nib(), errors: true
     .pipe expand "css"
@@ -53,6 +56,7 @@ gulp.task "stylus", ["sprite"], ->
 
 gulp.task "jade", ->
   gulp.src paths.html
+    .pipe plumber()
     .pipe jade pretty: true
     .pipe expand "html"
     .pipe gulp.dest DEST
@@ -72,6 +76,7 @@ gulp.task "browser-sync", ->
 
 gulp.task "sftp", ->
   gulp.src CHANGED
+    .pipe plumber()
     .pipe sftp
       host: 'example.com'
       user: 'myname'
@@ -81,6 +86,7 @@ gulp.task "sftp", ->
 # http://blog.e-riverstyle.com/2014/02/gulpspritesmithcss-spritegulp.html
 gulp.task "sprite", ->
   a = gulp.src paths.sprite
+    .pipe plumber()
     .pipe spritesmith
       imgName: 'images/sprite.png'
       cssName: 'images/sprite.styl'
