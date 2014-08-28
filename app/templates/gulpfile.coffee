@@ -16,16 +16,16 @@ pngquant = require 'imagemin-pngquant'
 
 expand = (ext)-> rename (path) -> _.tap path, (p) -> p.extname = ".#{ext}"
 
-DEST = "./htdocs"
+DEST = "./dist"
 SRC = "./src"
 CHANGED = "./__modified"
 
 # ファイルタイプごとに無視するファイルなどを設定
 paths =
   js: ["#{SRC}/**/*.coffee", "!#{SRC}/**/_**/*.coffee", "!#{SRC}/**/_*.coffee"]
-  css: ["#{SRC}/**/*.styl", "!#{SRC}/**/sprite*.styl", "!#{SRC}/**/_**/*.styl"]
+  css: ["#{SRC}/**/*.styl", "!#{SRC}/**/sprite*.styl", "!#{SRC}/**/_**/*.styl", "!#{SRC}/**/_*.styl"]
   img: ["#{SRC}/**/*.{png, jpg, gif}", "!#{SRC}/**/sprite/**/*.png"]
-  html: ["#{SRC}/**/*.jade", "!#{SRC}/**/_**/*.jade"]
+  html: ["#{SRC}/**/*.jade", "!#{SRC}/**/_**/*.jade", "!#{SRC}/**/_*.jade"]
   reload: ["#{DEST}/**/*", "!#{DEST}/**/*.css"]
   sprite: "#{SRC}/**/sprite/**/*.png"
 
@@ -34,7 +34,7 @@ gulp.task 'browserify', ->
     .pipe plumber()
     .pipe browserify
         debug: false
-        transform: ['coffeeify', 'jadeify']
+        transform: ['coffeeify', 'jadeify', 'stylify', 'debowerify']
         extensions: ['.coffee'],
     .pipe expand "js"
     #.pipe uglify()
@@ -105,5 +105,5 @@ gulp.task 'watch', ->
     gulp.watch paths.html , ['jade']
     gulp.watch paths.reload, -> browserSync.reload once: true
 
-gulp.task "default", ['jade', 'browser-sync', 'watch'] 
+gulp.task "default", ['jade', 'stylus', 'browserify', 'browser-sync', 'watch'] 
 gulp.task "build", ['imagemin', 'stylus', 'browserify', 'jade']
