@@ -38,12 +38,14 @@ var KatamariGulpGenerator = yeoman.generators.Base.extend({
   },
 
   app: function () {
-    this.mkdir('htdocs');
+    this.mkdir('dist');
     this.mkdir('src');
 
     this.template('_package.json', 'package.json');
     this.template('gulpfile.coffee', 'gulpfile.coffee');
     this.template('src/index.jade', 'src/index.jade');
+    this.copy('src/index.coffee', 'src/index.coffee');
+    this.copy('src/index.styl', 'src/index.styl');
     this.copy('_gitignore', '.gitignore');
   },
 

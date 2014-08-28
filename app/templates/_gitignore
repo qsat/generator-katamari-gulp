@@ -3,6 +3,5 @@ bower_components/
 .DS_Store
 Thumbs.db
 .svn
-_templates
-_modified*
+__*
 .ftpass
