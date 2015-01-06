@@ -96,8 +96,7 @@ gulp.task "imagemin", ->
     .pipe gulp.dest DEST
 
 gulp.task "browser-sync", ->
-  browserSync.init null,
-    reloadDelay:2000,
+  browserSync
     #startPath: 'a.html'
     server: baseDir: DEST
 
