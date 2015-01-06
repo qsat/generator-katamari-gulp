@@ -1,20 +1,22 @@
 _ = require 'underscore'
 gulp = require 'gulp'
 jade = require 'gulp-jade'
-sftp = require 'gulp-sftp'
 stylus = require 'gulp-stylus'
 rename = require 'gulp-rename'
 uglify = require 'gulp-uglify'
 changed = require 'gulp-changed'
 imagemin = require 'gulp-imagemin'
-browserify = require 'gulp-browserify'
+transform = require 'vinyl-transform'
+browserify = require 'browserify'
 browserSync = require 'browser-sync'
 spritesmith = require 'gulp.spritesmith'
 plumber = require 'gulp-plumber'
+watchify = require 'watchify'
 pngcrush = require 'imagemin-pngcrush'
 pngquant = require 'imagemin-pngquant'
 
 expand = (ext)-> rename (path) -> _.tap path, (p) -> p.extname = ".#{ext}"
+notify = (filename) -> console.log(filename)
 
 DEST = "./dist"
 SRC = "./src"
@@ -30,16 +32,41 @@ paths =
   sprite: "#{SRC}/**/sprite/**/*.png"
 
 gulp.task 'browserify', ->
-  gulp.src paths.js, read: false
-    .pipe plumber()
-    .pipe browserify
-        debug: false
-        transform: ['coffeeify', 'jadeify', 'stylify', 'debowerify']
-        extensions: ['.coffee'],
-    .pipe expand "js"
-    #.pipe uglify()
-    .pipe gulp.dest DEST
-    .pipe gulp.dest CHANGED
+
+  bundler = (options) ->
+    transform (filename) ->
+      b = browserify _.extend options, {}#watchify.args
+
+      # watch
+      #b = watchify b
+      b.add filename
+
+      # transform
+      b.transform 'coffeeify'
+      b.transform 'jadeify'
+      b.transform 'stylify'
+      b.transform 'debowerify'
+
+      # events
+      b.on 'bundle', notify.bind null, 'BUNDLE ' + filename
+      b.on 'error', -> console.log "error"
+      b.on 'log', -> console.log arguments
+      b.on 'update', ->
+        console.log "asdasd"
+        bundle()
+
+      b.bundle()
+
+  bundle = ->
+    gulp.src paths.js
+      .pipe plumber()
+      .pipe bundler extensions: ['.coffee']
+      .pipe expand "js"
+      #.pipe uglify()
+      .pipe gulp.dest DEST
+      .pipe gulp.dest CHANGED
+
+  bundle()
 
 # FW for Stylus
 nib = require 'nib'
@@ -73,15 +100,6 @@ gulp.task "browser-sync", ->
     reloadDelay:2000,
     #startPath: 'a.html'
     server: baseDir: DEST
-
-gulp.task "sftp", ->
-  gulp.src CHANGED
-    .pipe plumber()
-    .pipe sftp
-      host: 'example.com'
-      user: 'myname'
-      #pass: '1234'
-      key:  require('fs').readFileSync('~/.ssh/privatekey.pem')
 
 # http://blog.e-riverstyle.com/2014/02/gulpspritesmithcss-spritegulp.html
 gulp.task "sprite", ->
