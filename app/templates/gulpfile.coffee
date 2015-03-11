@@ -35,27 +35,19 @@ gulp.task 'browserify', ->
 
   bundler = (options) ->
     transform (filename) ->
-      b = browserify _.extend options, {}#watchify.args
-
+      b = browserify _.extend options, watchify.args, fullPaths: false
       # watch
-      #b = watchify b
+      b = watchify b
       b.add filename
-
-      # transform
-      b.transform 'coffeeify'
-      b.transform 'jadeify'
-      b.transform 'stylify'
-      b.transform 'debowerify'
-
       # events
-      b.on 'bundle', notify.bind null, 'BUNDLE ' + filename
-      b.on 'error', -> console.log "error"
-      b.on 'log', -> console.log arguments
-      b.on 'update', ->
-        console.log "asdasd"
-        bundle()
-
+      b.on 'bundle', (e)->
+        notify 'BUNDLE '+filename.split("/src/").slice(-1).join("/")
+      .on 'log', (e)->
+        notify( "    "+e )
+        notify ""
+      .on 'update', bundle
       b.bundle()
+        .on 'error', -> console.log arguments
 
   bundle = ->
     gulp.src paths.js
@@ -117,10 +109,10 @@ gulp.task "sprite", ->
   a.css.pipe gulp.dest SRC
 
 gulp.task 'watch', ->
-    gulp.watch [paths.js[0], "#{SRC}/**/_*/*"], ['browserify']
-    gulp.watch paths.css  , ['stylus']
-    gulp.watch paths.html , ['jade']
-    gulp.watch paths.reload, -> browserSync.reload once: true
+  #gulp.watch [paths.js[0], "#{SRC}/**/_*/*"], ['browserify']
+  gulp.watch paths.css  , ['stylus']
+  gulp.watch paths.html , ['jade']
+  gulp.watch paths.reload, -> browserSync.reload once: true
 
 gulp.task "default", ['jade', 'stylus', 'browserify', 'browser-sync', 'watch'] 
 gulp.task "build", ['imagemin', 'stylus', 'browserify', 'jade']
